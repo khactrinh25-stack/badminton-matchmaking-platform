@@ -17,7 +17,7 @@
 - [ ] Khởi tạo dự án Frontend React 18 + Vite + TypeScript + Tailwind CSS + TanStack Query + Zustand.
 
 ## Giai đoạn 3: Nền tảng Tài khoản & Nghiệp vụ 1 — Tạo sân, Tìm sân GPS (Milestone 2)
-- [ ] Backend: API Đăng ký (SĐT Unique + bcrypt), Đăng nhập JWT, Guards phân quyền `USER`/`ADMIN`, Cập nhật hồ sơ & trình độ (`FR-01` -> `FR-03`).
+- [x] Backend: API Đăng ký (SĐT Unique + bcrypt), Đăng nhập JWT, Guards phân quyền `USER`/`ADMIN`, Cập nhật hồ sơ & trình độ (`FR-01` -> `FR-03`).
 - [ ] Frontend: Xây dựng `CustomMapView` Adapter bọc thư viện Leaflet + tìm kiếm địa chỉ Nominatim/Goong (`NFR-10`).
 - [ ] Backend + Frontend: Chức năng Tạo buổi đánh mới (`FR-04`) kèm kiểm tra khóa tự động các gói thời gian hủy (`FLEXIBLE_6H`, `MODERATE_12H`, `STRICT_24H`).
 - [ ] Backend + Frontend: Truy vấn tìm kiếm buổi đánh theo bán kính GPS bằng công thức Haversine SQL (`FR-05`, `NFR-06`) và xem chi tiết sân (`FR-06`).
