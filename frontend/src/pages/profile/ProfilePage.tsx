@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
@@ -21,6 +21,7 @@ import { getSkillLevelLabel, SKILL_LEVEL_OPTIONS } from '../../constants/skillLe
 import { extractApiErrorMessage } from '../../services/api';
 import { userService } from '../../services/authService';
 import { useAuthStore } from '../../stores/authStore';
+import type { UpdateProfilePayload, UserProfile } from '../../types/auth';
 
 function formatCurrencyVnd(amount: string | number): string {
   const numeric = typeof amount === 'string' ? Number(amount) : amount;
@@ -54,30 +55,15 @@ export function ProfilePage() {
     error,
   } = useQuery({
     queryKey: ['user', 'me'],
-    queryFn: userService.getMe,
+    queryFn: async () => {
+      const data = await userService.getMe();
+      setUser(data);
+      return data;
+    },
   });
 
   const currentUser = profile ?? storedUser;
-
-  const [fullName, setFullName] = useState(currentUser?.full_name ?? '');
-  const [skillLevel, setSkillLevel] = useState<number>(currentUser?.skill_level ?? 2.5);
-  const [bankName, setBankName] = useState(currentUser?.bank_name ?? '');
-  const [bankAccountNumber, setBankAccountNumber] = useState(
-    currentUser?.bank_account_number ?? '',
-  );
-  const [bankAccountName, setBankAccountName] = useState(currentUser?.bank_account_name ?? '');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (profile) {
-      setUser(profile);
-      setFullName(profile.full_name);
-      setSkillLevel(profile.skill_level);
-      setBankName(profile.bank_name ?? '');
-      setBankAccountNumber(profile.bank_account_number ?? '');
-      setBankAccountName(profile.bank_account_name ?? '');
-    }
-  }, [profile, setUser]);
 
   const updateMutation = useMutation({
     mutationFn: userService.updateMe,
@@ -94,18 +80,21 @@ export function ProfilePage() {
     navigate('/login', { replace: true });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleProfileSubmit = (payload: UpdateProfilePayload) => {
     setSuccessMessage(null);
-
-    updateMutation.mutate({
-      full_name: fullName.trim() || undefined,
-      skill_level: skillLevel,
-      bank_name: bankName.trim() || undefined,
-      bank_account_number: bankAccountNumber.trim() || undefined,
-      bank_account_name: bankAccountName.trim().toUpperCase() || undefined,
-    });
+    updateMutation.mutate(payload);
   };
+
+  const formSyncKey = currentUser
+    ? [
+        currentUser.id,
+        currentUser.full_name,
+        currentUser.skill_level,
+        currentUser.bank_name ?? '',
+        currentUser.bank_account_number ?? '',
+        currentUser.bank_account_name ?? '',
+      ].join('|')
+    : 'empty';
 
   if (isLoading && !currentUser) {
     return (
@@ -308,139 +297,182 @@ export function ProfilePage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="profile_name" className="block text-sm font-medium text-slate-700 mb-1.5">
-                Họ và tên
-              </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  id="profile_name"
-                  type="text"
-                  maxLength={100}
-                  disabled={isAdmin}
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="profile_skill" className="block text-sm font-medium text-slate-700 mb-1.5">
-                Trình độ cầu lông
-              </label>
-              <div className="relative">
-                <Award className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <select
-                  id="profile_skill"
-                  disabled={isAdmin}
-                  value={skillLevel}
-                  onChange={(e) => setSkillLevel(Number(e.target.value))}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm bg-white disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                >
-                  {SKILL_LEVEL_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <p className="mt-1 text-xs text-slate-500">
-                {SKILL_LEVEL_OPTIONS.find((o) => o.value === skillLevel)?.description}
-              </p>
-            </div>
-
-            <div className="pt-2 border-t border-slate-100 space-y-4">
-              <h3 className="text-sm font-semibold text-slate-800">
-                Thông tin ngân hàng thụ hưởng
-              </h3>
-
-              <div>
-                <label htmlFor="bank_name" className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Tên ngân hàng
-                </label>
-                <div className="relative">
-                  <Building2 className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="bank_name"
-                    type="text"
-                    maxLength={100}
-                    disabled={isAdmin}
-                    placeholder="Ví dụ: Vietcombank, MB Bank, Techcombank..."
-                    value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="bank_account_number"
-                  className="block text-sm font-medium text-slate-700 mb-1.5"
-                >
-                  Số tài khoản ngân hàng
-                </label>
-                <div className="relative">
-                  <CreditCard className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="bank_account_number"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={50}
-                    disabled={isAdmin}
-                    placeholder="0071000123456"
-                    value={bankAccountNumber}
-                    onChange={(e) => setBankAccountNumber(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="bank_account_name"
-                  className="block text-sm font-medium text-slate-700 mb-1.5"
-                >
-                  Tên chủ tài khoản (viết hoa không dấu)
-                </label>
-                <input
-                  id="bank_account_name"
-                  type="text"
-                  maxLength={100}
-                  disabled={isAdmin}
-                  placeholder="NGUYEN VAN A"
-                  value={bankAccountName}
-                  onChange={(e) => setBankAccountName(e.target.value.toUpperCase())}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm uppercase disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                />
-              </div>
-            </div>
-
-            {!isAdmin && (
-              <button
-                type="submit"
-                disabled={updateMutation.isPending}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-semibold text-sm transition-colors shadow-sm"
-              >
-                {updateMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Đang lưu thay đổi...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    Lưu thông tin hồ sơ
-                  </>
-                )}
-              </button>
-            )}
-          </form>
+          <ProfileEditForm
+            key={formSyncKey}
+            currentUser={currentUser}
+            isAdmin={isAdmin}
+            isPending={updateMutation.isPending}
+            onSubmit={handleProfileSubmit}
+          />
         </section>
       </main>
     </div>
+  );
+}
+
+interface ProfileEditFormProps {
+  currentUser: UserProfile | null;
+  isAdmin: boolean;
+  isPending: boolean;
+  onSubmit: (payload: UpdateProfilePayload) => void;
+}
+
+function ProfileEditForm({
+  currentUser,
+  isAdmin,
+  isPending,
+  onSubmit,
+}: ProfileEditFormProps) {
+  const [fullName, setFullName] = useState(currentUser?.full_name ?? '');
+  const [skillLevel, setSkillLevel] = useState<number>(currentUser?.skill_level ?? 2.5);
+  const [bankName, setBankName] = useState(currentUser?.bank_name ?? '');
+  const [bankAccountNumber, setBankAccountNumber] = useState(
+    currentUser?.bank_account_number ?? '',
+  );
+  const [bankAccountName, setBankAccountName] = useState(currentUser?.bank_account_name ?? '');
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSubmit({
+      full_name: fullName.trim() || undefined,
+      skill_level: skillLevel,
+      bank_name: bankName.trim() || undefined,
+      bank_account_number: bankAccountNumber.trim() || undefined,
+      bank_account_name: bankAccountName.trim().toUpperCase() || undefined,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="profile_name" className="block text-sm font-medium text-slate-700 mb-1.5">
+          Họ và tên
+        </label>
+        <div className="relative">
+          <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            id="profile_name"
+            type="text"
+            maxLength={100}
+            disabled={isAdmin}
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="profile_skill" className="block text-sm font-medium text-slate-700 mb-1.5">
+          Trình độ cầu lông
+        </label>
+        <div className="relative">
+          <Award className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <select
+            id="profile_skill"
+            disabled={isAdmin}
+            value={skillLevel}
+            onChange={(e) => setSkillLevel(Number(e.target.value))}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm bg-white disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          >
+            {SKILL_LEVEL_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <p className="mt-1 text-xs text-slate-500">
+          {SKILL_LEVEL_OPTIONS.find((o) => o.value === skillLevel)?.description}
+        </p>
+      </div>
+
+      <div className="pt-2 border-t border-slate-100 space-y-4">
+        <h3 className="text-sm font-semibold text-slate-800">
+          Thông tin ngân hàng thụ hưởng
+        </h3>
+
+        <div>
+          <label htmlFor="bank_name" className="block text-sm font-medium text-slate-700 mb-1.5">
+            Tên ngân hàng
+          </label>
+          <div className="relative">
+            <Building2 className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              id="bank_name"
+              type="text"
+              maxLength={100}
+              disabled={isAdmin}
+              placeholder="Ví dụ: Vietcombank, MB Bank, Techcombank..."
+              value={bankName}
+              onChange={(e) => setBankName(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="bank_account_number"
+            className="block text-sm font-medium text-slate-700 mb-1.5"
+          >
+            Số tài khoản ngân hàng
+          </label>
+          <div className="relative">
+            <CreditCard className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              id="bank_account_number"
+              type="text"
+              inputMode="numeric"
+              maxLength={50}
+              disabled={isAdmin}
+              placeholder="0071000123456"
+              value={bankAccountNumber}
+              onChange={(e) => setBankAccountNumber(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="bank_account_name"
+            className="block text-sm font-medium text-slate-700 mb-1.5"
+          >
+            Tên chủ tài khoản (viết hoa không dấu)
+          </label>
+          <input
+            id="bank_account_name"
+            type="text"
+            maxLength={100}
+            disabled={isAdmin}
+            placeholder="NGUYEN VAN A"
+            value={bankAccountName}
+            onChange={(e) => setBankAccountName(e.target.value.toUpperCase())}
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm uppercase disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+        </div>
+      </div>
+
+      {!isAdmin && (
+        <button
+          type="submit"
+          disabled={isPending}
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-semibold text-sm transition-colors shadow-sm"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Đang lưu thay đổi...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              Lưu thông tin hồ sơ
+            </>
+          )}
+        </button>
+      )}
+    </form>
   );
 }
