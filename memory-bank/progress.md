@@ -11,9 +11,9 @@
 - [x] Hoàn thiện đặc tả RESTful API, JSON Request/Response và các quy tắc biên trong `memory-bank/api-contracts.md`.
 
 ## Giai đoạn 2: Xây dựng Cơ sở Dữ liệu & Khung Dự án (Milestone 1)
-- [ ] Khởi tạo dự án Backend NestJS + Cấu hình Prisma ORM kết nối PostgreSQL.
-- [ ] Đưa `schema.prisma` từ `memory-bank/data-model.md` vào `backend/prisma/schema.prisma` và chạy Migration đầu tiên.
-- [ ] Viết dữ liệu mẫu (`backend/prisma/seed.ts`) gồm tài khoản Admin, Host, Guest và các sân cầu lông mẫu tại TP.HCM.
+- [x] Khởi tạo dự án Backend NestJS + Cấu hình Prisma ORM kết nối PostgreSQL.
+- [x] Đưa `schema.prisma` từ `memory-bank/data-model.md` vào `backend/prisma/schema.prisma` và chạy Migration đầu tiên.
+- [x] Viết dữ liệu mẫu (`backend/prisma/seed.ts`) gồm tài khoản Admin, Host, Guest và các sân cầu lông mẫu tại TP.HCM.
 - [ ] Khởi tạo dự án Frontend React 18 + Vite + TypeScript + Tailwind CSS + TanStack Query + Zustand.
 
 ## Giai đoạn 3: Nền tảng Tài khoản & Nghiệp vụ 1 — Tạo sân, Tìm sân GPS (Milestone 2)

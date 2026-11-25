@@ -1,7 +1,7 @@
 # ACTIVE CONTEXT — Trạng thái Làm việc Hiện tại
 
-**Cập nhật lần cuối:** 2026-11-24  
-**Giai đoạn hiện tại:** Hoàn tất 100% tài liệu Phân tích, Thiết kế Hệ thống & Bộ nhớ Ngữ cảnh Memory Bank — Sẵn sàng chuyển sang **Giai đoạn 2: Khởi tạo Khung Mã nguồn & Cơ sở Dữ liệu (Milestone 1)**.
+**Cập nhật lần cuối:** 2026-11-25  
+**Giai đoạn hiện tại:** Đang thực hiện **Giai đoạn 2: Xây dựng Cơ sở Dữ liệu & Khung Dự án (Milestone 1)** — Đã hoàn tất Bước 1 (Prisma ORM, Migration `init`, Seed dữ liệu mẫu & `npm run build` Backend).
 
 ## 1. Những Nội dung Đã Chốt & Hoàn thành
 - **Phân tích & Thiết kế Hệ thống Thông tin (Giai đoạn 1):**
@@ -20,7 +20,6 @@
 4. **Thời gian giữ chỗ chờ thanh toán & Phạm vi khóa Escrow:** Đơn `PENDING_PAYMENT` giữ chỗ tối đa 10 phút trước khi Cronjob chuyển sang `EXPIRED`; khi có tranh chấp, hệ thống chỉ khóa giải ngân trên đơn `Booking` bị `DISPUTED`, không khóa cả `Session`.
 
 ## 3. Trọng tâm Công việc Tiếp theo (Next Steps — Milestone 1)
-1. Khởi tạo thư mục `backend/` bằng NestJS CLI, cài đặt các thư viện theo `techContext.md` (`@prisma/client`, `prisma`, `@nestjs/jwt`, `@nestjs/passport`, `passport-jwt`, `bcrypt`, `class-validator`, `class-transformer`, `@nestjs/swagger`, `@nestjs/schedule`, `multer`, `cloudinary`).
-2. Sao chép nội dung `schema.prisma` từ `memory-bank/data-model.md` vào `backend/prisma/schema.prisma`, cấu hình `.env` và chạy `npx prisma migrate dev --name init`.
-3. Viết script `backend/prisma/seed.ts` tạo sẵn 1 tài khoản `ADMIN`, 2 tài khoản `USER` (Host & Guest) và 3 buổi đánh cầu lông mẫu tại TP.HCM.
-4. Khởi tạo thư mục `frontend/` bằng Vite (`react-ts`), cài đặt Tailwind CSS, React Router DOM, TanStack Query, Zustand, Leaflet (`react-leaflet`), `html5-qrcode`, `qrcode.react` và `lucide-react`.
+1. ~~Cài đặt Prisma ORM, viết `backend/prisma/schema.prisma`, chạy `npx prisma migrate dev --name init` và `backend/prisma/seed.ts`~~ *(Đã hoàn thành: cài `@prisma/client@^5.22.0`, `prisma@^5.22.0`, `bcrypt`, `@types/bcrypt`; chạy migration `20261125095957_init`; nạp 1 Admin `0900000001`, 2 Host `0901000001`/`0901000002`, 3 Guest `0902000001`-`0902000003`, 3 buổi đánh tại TP.HCM; `npm run build` thành công).*
+2. Khởi tạo thư mục `frontend/` bằng Vite (`react-ts`), cài đặt Tailwind CSS, React Router DOM, TanStack Query, Zustand, Leaflet (`react-leaflet`), `html5-qrcode`, `qrcode.react` và `lucide-react`.
+3. Cài đặt các thư viện NestJS còn lại (`@nestjs/jwt`, `@nestjs/passport`, `passport-jwt`, `class-validator`, `class-transformer`, `@nestjs/swagger`, `@nestjs/schedule`, `multer`, `cloudinary`) và bắt đầu Giai đoạn 3 (Auth & Sessions).
