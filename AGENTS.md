@@ -8,7 +8,8 @@
 Để tiết kiệm Token và đảm bảo không bao giờ làm sai lệch nghiệp vụ dự án giữa các phiên làm việc, Agent **BẮT BUỘC** tuân thủ quy trình sau:
 
 1. **Khi bắt đầu mỗi phiên làm việc (Start of Session):**
-   - Đọc `memory-bank/activeContext.md` và `memory-bank/progress.md` đầu tiên để nắm trạng thái hiện tại và công việc đang làm dở.
+   - Đọc `CONTRIBUTING.md`, `memory-bank/activeContext.md` và `memory-bank/progress.md` đầu tiên để nắm quy ước nhánh Git, trạng thái hiện tại và công việc đang làm dở.
+   - Đọc thêm các tệp chuyên biệt trong `memory-bank/` khi tác vụ có liên quan đến nghiệp vụ, kiến trúc, công nghệ, cơ sở dữ liệu hoặc hợp đồng API.
    - Đọc các file đặc tả chuyên biệt trước khi viết mã nguồn tương ứng:
      - Liên quan đến nghiệp vụ, luật hủy sân, tranh chấp, gậy phạt -> Đọc `memory-bank/productContext.md`.
      - Liên quan đến kiến trúc, xử lý đồng thời, truy vấn bản đồ, bảo mật -> Đọc `memory-bank/systemPatterns.md`.
@@ -89,6 +90,6 @@ badminton-matchmaking/
 
 ## 6. Quy tắc Quản lý Mã nguồn Git (Git Guardrails)
 
-1. **Không tự ý thao tác nhánh và đẩy mã:** Agent tuyệt đối không được tự ý chạy các lệnh `git push`, `git merge`, `git reset --hard` hoặc chuyển đổi nhánh nếu chưa có yêu cầu trực tiếp từ lập trình viên.
-2. **Tuân thủ chuẩn Conventional Commits:** Khi được yêu cầu đề xuất hoặc tạo commit message, Agent bắt buộc viết bằng tiếng Anh theo định dạng `<type>(<scope>): <description>` (ví dụ: `feat(sessions): add Haversine GPS radius search`).
-3. **Chỉ commit sau khi biên dịch thành công:** Không gợi ý lưu commit nếu lệnh `npm run build` tại `backend/` hoặc `frontend/` vẫn còn báo lỗi TypeScript.
+1. **Kiểm tra nhánh bắt buộc trước khi viết mã:** Trước khi tạo mới hoặc chỉnh sửa bất kỳ tệp mã nguồn nào, Agent bắt buộc phải chạy lệnh `git branch --show-current`. Nếu kết quả trả về là `main`, Agent không được phép viết mã trên nhánh này mà phải tự động chạy lệnh `git checkout -b feat/<ten-tinh-nang>` dựa trên yêu cầu của người dùng rồi mới tiến hành lập trình.
+2. **Không tự ý đẩy mã hoặc gộp nhánh:** Agent tuyệt đối không được tự ý chạy các lệnh `git push`, `git merge` hoặc `git reset --hard` nếu chưa có yêu cầu trực tiếp từ lập trình viên.
+3. **Tuân thủ chuẩn Conventional Commits và cổng biên dịch:** Chỉ đề xuất commit message tiếng Anh theo định dạng `<type>(<scope>): <description>` sau khi lệnh `npm run build` tại `backend/` hoặc `frontend/` chạy thành công không có lỗi.
