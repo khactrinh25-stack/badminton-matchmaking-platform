@@ -27,7 +27,7 @@ async function main() {
     create: {
       phone_number: '0901000001',
       password_hash: passwordHash,
-      full_name: 'Nguyễn Văn Hùng (Host Q1)',
+      full_name: 'Nguyễn Văn Hùng',
       role: Role.USER,
       skill_level: 3.5,
       available_balance: 500000,
@@ -43,7 +43,7 @@ async function main() {
     create: {
       phone_number: '0901000002',
       password_hash: passwordHash,
-      full_name: 'Trần Minh Tuấn (Host Q11)',
+      full_name: 'Trần Minh Tuấn',
       role: Role.USER,
       skill_level: 3.5,
       available_balance: 300000,
@@ -60,7 +60,7 @@ async function main() {
     create: {
       phone_number: '0902000001',
       password_hash: passwordHash,
-      full_name: 'Lê Thị Mai (Guest)',
+      full_name: 'Lê Thị Mai',
       role: Role.USER,
       skill_level: 2.5,
       available_balance: 400000,
@@ -73,7 +73,7 @@ async function main() {
     create: {
       phone_number: '0902000002',
       password_hash: passwordHash,
-      full_name: 'Phạm Hoàng Nam (Guest)',
+      full_name: 'Phạm Hoàng Nam',
       role: Role.USER,
       skill_level: 3.5,
       available_balance: 600000,
@@ -86,7 +86,7 @@ async function main() {
     create: {
       phone_number: '0902000003',
       password_hash: passwordHash,
-      full_name: 'Võ Quốc Bảo (Guest)',
+      full_name: 'Võ Quốc Bảo',
       role: Role.USER,
       skill_level: 4.0,
       available_balance: 250000,
