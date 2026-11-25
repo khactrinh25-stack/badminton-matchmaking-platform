@@ -86,3 +86,9 @@ badminton-matchmaking/
 2. **Bám sát đặc tả đã chốt:** Tuyệt đối không tự ý đổi tên bảng, tên cột, giá trị Enum trong `memory-bank/data-model.md` hoặc đường dẫn URL, cấu trúc JSON trong `memory-bank/api-contracts.md`.
 3. **Cổng kiểm chứng biên dịch bắt buộc:** Sau khi viết hoặc sửa mã nguồn ở `backend/` hoặc `frontend/`, Agent bắt buộc phải chạy lệnh `npm run build` tại thư mục tương ứng và sửa toàn bộ lỗi kiểu dữ liệu TypeScript trước khi báo cáo hoàn thành hoặc cập nhật tiến độ.
 4. **Cập nhật bộ nhớ sau mỗi bước:** Sau khi `npm run build` chạy thành công không có lỗi, cập nhật trạng thái vào `memory-bank/activeContext.md` và đánh dấu hoàn thành vào `memory-bank/progress.md`.
+
+## 6. Quy tắc Quản lý Mã nguồn Git (Git Guardrails)
+
+1. **Không tự ý thao tác nhánh và đẩy mã:** Agent tuyệt đối không được tự ý chạy các lệnh `git push`, `git merge`, `git reset --hard` hoặc chuyển đổi nhánh nếu chưa có yêu cầu trực tiếp từ lập trình viên.
+2. **Tuân thủ chuẩn Conventional Commits:** Khi được yêu cầu đề xuất hoặc tạo commit message, Agent bắt buộc viết bằng tiếng Anh theo định dạng `<type>(<scope>): <description>` (ví dụ: `feat(sessions): add Haversine GPS radius search`).
+3. **Chỉ commit sau khi biên dịch thành công:** Không gợi ý lưu commit nếu lệnh `npm run build` tại `backend/` hoặc `frontend/` vẫn còn báo lỗi TypeScript.
