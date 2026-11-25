@@ -24,7 +24,7 @@ export function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [skillLevel, setSkillLevel] = useState<number>(3.0);
+  const [skillLevel, setSkillLevel] = useState<number>(2.5);
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 

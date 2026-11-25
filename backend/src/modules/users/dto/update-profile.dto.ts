@@ -15,11 +15,11 @@ export class UpdateProfileDto {
   @MaxLength(100)
   full_name?: string;
 
-  @ApiPropertyOptional({ example: 3.5, minimum: 1.0, maximum: 5.0 })
+  @ApiPropertyOptional({ example: 3.0, minimum: 1.0, maximum: 4.0 })
   @IsOptional()
   @IsNumber()
   @Min(1.0)
-  @Max(5.0)
+  @Max(4.0)
   skill_level?: number;
 
   @ApiPropertyOptional({ example: 'Vietcombank', maxLength: 100 })

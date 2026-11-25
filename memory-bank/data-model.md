@@ -27,15 +27,17 @@ Hệ thống bao gồm **6 thực thể cốt lõi** ánh xạ trực tiếp san
 
 ## 2. Quy ước Thang đo Trình độ Cầu lông (`skill_level`)
 
-Cơ sở dữ liệu lưu trữ trình độ dưới dạng số thực (`Float`) từ `1.0` đến `5.0` (bước nhảy `0.5`) để tối ưu truy vấn lọc khoảng giá trị (`min_skill_level <= user.skill_level <= max_skill_level`). Phía Frontend chịu trách nhiệm ánh xạ sang nhãn tiếng Việt:
+Cơ sở dữ liệu lưu trữ trình độ dưới dạng số thực (`Float`) từ `1.0` đến `4.0` (bước nhảy `0.5`, gồm 7 cấp độ) để tối ưu truy vấn lọc khoảng giá trị (`min_skill_level <= user.skill_level <= max_skill_level`). Phía Frontend (`frontend/src/constants/skillLevels.ts`) chịu trách nhiệm ánh xạ sang nhãn tiếng Việt:
 
 | Giá trị lưu DB (`Float`) | Nhãn hiển thị trên Frontend | Mô tả năng lực tham chiếu |
 | :--- | :--- | :--- |
-| `1.0` – `1.5` | **Mới chơi (Newbie)** | Mới làm quen luật chơi, kỹ thuật cơ bản chưa ổn định. |
-| `2.0` – `2.5` | **Trung bình yếu (TB-)** | Phông cầu, giao cầu cơ bản tốt, di chuyển bước đơn. |
-| `3.0` – `3.5` | **Trung bình (TB)** | Đánh đôi nhịp nhàng, biết đập cầu, bỏ nhỏ, phòng thủ ổn. |
-| `4.0` – `4.5` | **Trung bình khá (TB+)** | Điều cầu chiến thuật tốt, phản tạt nhanh, thể lực bền. |
-| `5.0` | **Khá / Bán chuyên (Khá+)** | Kỹ thuật toàn diện, tốc độ cao, từng tham gia giải phong trào. |
+| `1.0` | **Newbie** | Mới làm quen cầm vợt, giao cầu và luật chơi cơ bản. |
+| `1.5` | **Yếu** | Đánh qua lại cơ bản, phông cầu và di chuyển chưa ổn định. |
+| `2.0` | **Trung bình yếu** | Biết luật đôi, di chuyển bước đơn và bắt đầu biết đập cầu. |
+| `2.5` | **Trung bình** | Đánh đôi ổn định, thủ cầu và điều cầu cơ bản tốt. |
+| `3.0` | **Trung bình khá** | Phối hợp công thủ nhịp nhàng, điều cầu chiến thuật tốt. |
+| `3.5` | **Khá** | Lực cổ tay tốt, tốc độ cao, xử lý kỹ thuật đa dạng. |
+| `4.0` | **Bán chuyên** | Kỹ thuật toàn diện, trình độ giải đấu phong trào. |
 
 ---
 

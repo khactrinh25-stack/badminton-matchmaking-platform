@@ -10,11 +10,11 @@
 - **Hoàn thiện Toàn bộ 7 File Tài liệu cho AI Coding Agent:**
   - `AGENTS.md`: Quy trình đọc/cập nhật ngữ cảnh, cấu trúc thư mục đầy đủ cho cả Backend và Frontend, cùng 6 quy tắc kỹ thuật bắt buộc.
   - `memory-bank/productContext.md`, `memory-bank/systemPatterns.md`, `memory-bank/techContext.md`.
-  - `memory-bank/data-model.md`: Chốt mô hình 6 thực thể (`User`, `Session`, `Booking`, `WalletTransaction`, `Dispute`, `WithdrawalRequest`), thang đo trình độ `Float` (`1.0` - `5.0`), toàn bộ bộ giá trị Enum và mã nguồn chuẩn `schema.prisma`.
+  - `memory-bank/data-model.md`: Chốt mô hình 6 thực thể (`User`, `Session`, `Booking`, `WalletTransaction`, `Dispute`, `WithdrawalRequest`), thang đo trình độ `Float` (`1.0` - `4.0`, 7 cấp độ), toàn bộ bộ giá trị Enum và mã nguồn chuẩn `schema.prisma`.
   - `memory-bank/api-contracts.md`: Chốt danh mục đầy đủ RESTful API endpoints, JSON Request/Response, cơ chế giữ chỗ 10 phút, thanh toán độc lập `WALLET` / `GATEWAY`, ngưỡng GPS 200m khi tranh chấp và khóa Escrow theo từng đơn đặt chỗ.
 
 ## 2. Các Quyết định Kỹ thuật Bổ sung Đã Thống nhất (Key Decisions)
-1. **Thang đo trình độ:** Lưu kiểu `Float` (`1.0` đến `5.0`, bước nhảy `0.5`) trong PostgreSQL; Frontend ánh xạ sang nhãn tiếng Việt.
+1. **Thang đo trình độ:** Lưu kiểu `Float` (`1.0` đến `4.0`, bước nhảy `0.5`, gồm 7 cấp độ: `Newbie`, `Yếu`, `Trung bình yếu`, `Trung bình`, `Trung bình khá`, `Khá`, `Bán chuyên`) trong PostgreSQL; Frontend ánh xạ qua `SKILL_LEVEL_OPTIONS` (`frontend/src/constants/skillLevels.ts`), Backend DTO giới hạn `@Min(1.0)` và `@Max(4.0)`.
 2. **Mã QR điểm danh:** Mỗi đơn `Booking` (kể cả đặt nhiều vị trí) sinh 1 mã QR duy nhất chứa `booking.id` (`UUID`).
 3. **Bằng chứng tranh chấp hai chiều:** Bảng `Dispute` lưu đồng thời bằng chứng của người khiếu nại (`reporter_*`) và bằng chứng phản hồi đối chứng từ bên còn lại (`respondent_*`) kèm khoảng cách Haversine thực tế tới sân (`<= 200m`).
 4. **Thời gian giữ chỗ chờ thanh toán & Phạm vi khóa Escrow:** Đơn `PENDING_PAYMENT` giữ chỗ tối đa 10 phút trước khi Cronjob chuyển sang `EXPIRED`; khi có tranh chấp, hệ thống chỉ khóa giải ngân trên đơn `Booking` bị `DISPUTED`, không khóa cả `Session`.

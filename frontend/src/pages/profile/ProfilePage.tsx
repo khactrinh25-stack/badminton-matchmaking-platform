@@ -60,7 +60,7 @@ export function ProfilePage() {
   const currentUser = profile ?? storedUser;
 
   const [fullName, setFullName] = useState(currentUser?.full_name ?? '');
-  const [skillLevel, setSkillLevel] = useState<number>(currentUser?.skill_level ?? 3.0);
+  const [skillLevel, setSkillLevel] = useState<number>(currentUser?.skill_level ?? 2.5);
   const [bankName, setBankName] = useState(currentUser?.bank_name ?? '');
   const [bankAccountNumber, setBankAccountNumber] = useState(
     currentUser?.bank_account_number ?? '',
@@ -265,7 +265,7 @@ export function ProfilePage() {
             <span>
               Trình độ hiện tại:{' '}
               <strong className="text-slate-800">
-                {getSkillLevelLabel(currentUser?.skill_level ?? 3.0)}
+                {getSkillLevelLabel(currentUser?.skill_level ?? 2.5)}
               </strong>
             </span>
           </div>
