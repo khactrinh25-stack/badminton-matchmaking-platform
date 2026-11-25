@@ -1,7 +1,7 @@
 # ACTIVE CONTEXT — Trạng thái Làm việc Hiện tại
 
 **Cập nhật lần cuối:** 2026-11-25  
-**Giai đoạn hiện tại:** Đang thực hiện **Giai đoạn 3: Nền tảng Tài khoản & Nghiệp vụ 1 (Milestone 2)** trên nhánh `feat/auth-users` — Đã hoàn tất phân hệ `auth` và `users` (`FR-01` -> `FR-03`), cấu hình Swagger UI `/api/docs`, `ValidationPipe`, `HttpExceptionFilter` và `npm run build` Backend thành công.
+**Giai đoạn hiện tại:** Đã hoàn tất **Bước 3: Nền tảng Frontend Auth & Profile** trên nhánh `feat/frontend-auth` — Cài đặt `react-router-dom`, `@tanstack/react-query`, `zustand`, `axios`, `lucide-react`, cấu hình Tailwind CSS, xây dựng Axios interceptor (`VITE_API_URL` + JWT + xử lý `401`), `useAuthStore`, `ProtectedRoute`, 3 trang (`LoginPage`, `RegisterPage`, `ProfilePage`) và `npm run build` Frontend thành công.
 
 ## 1. Những Nội dung Đã Chốt & Hoàn thành
 - **Phân tích & Thiết kế Hệ thống Thông tin (Giai đoạn 1):**
@@ -22,5 +22,5 @@
 ## 3. Trọng tâm Công việc Tiếp theo (Next Steps — Milestone 1)
 1. ~~Cài đặt Prisma ORM, viết `backend/prisma/schema.prisma`, chạy `npx prisma migrate dev --name init` và `backend/prisma/seed.ts`~~ *(Đã hoàn thành: cài `@prisma/client@^5.22.0`, `prisma@^5.22.0`, `bcrypt`, `@types/bcrypt`; chạy migration `20261125095957_init`; nạp 1 Admin `0900000001`, 2 Host `0901000001`/`0901000002`, 3 Guest `0902000001`-`0902000003`, 3 buổi đánh tại TP.HCM; `npm run build` thành công).*
 2. ~~Xây dựng nền tảng Backend Auth & Users (`FR-01` -> `FR-03`)~~ *(Đã hoàn thành trên nhánh `feat/auth-users`: cài `@nestjs/jwt`, `@nestjs/passport`, `passport`, `passport-jwt`, `class-validator`, `class-transformer`, `@nestjs/swagger`, `@types/passport-jwt`; cấu hình global prefix `/api`, CORS, `ValidationPipe(whitelist, transform)`, `HttpExceptionFilter` và Swagger UI `/api/docs` trong `backend/src/main.ts`; tạo `PrismaModule`, `JwtAuthGuard`, `RolesGuard`, `@Roles()`, `@CurrentUser()`, `AuthModule` (`POST /api/auth/register`, `POST /api/auth/login`), `UsersModule` (`GET /api/users/me`, `PATCH /api/users/me`); `npm run build` thành công).*
-3. Khởi tạo thư mục `frontend/` bằng Vite (`react-ts`), cài đặt Tailwind CSS, React Router DOM, TanStack Query, Zustand, Leaflet (`react-leaflet`), `html5-qrcode`, `qrcode.react` và `lucide-react`.
-4. Tiếp tục phát triển các phân hệ Backend tiếp theo (`sessions`, `bookings`, `disputes`, `wallets`, `admin`) và `CustomMapView` Adapter ở Frontend.
+3. ~~Khởi tạo thư mục `frontend/` bằng Vite (`react-ts`), cài đặt Tailwind CSS, React Router DOM, TanStack Query, Zustand, `axios` và `lucide-react`; xây dựng Axios client, Auth store và 3 trang Đăng nhập, Đăng ký, Hồ sơ cá nhân~~ *(Đã hoàn thành trên nhánh `feat/frontend-auth`: cấu hình `tailwind.config.js`, `postcss.config.js`, `src/services/api.ts`, `src/stores/authStore.ts`, `src/components/auth/ProtectedRoute.tsx`, `LoginPage.tsx`, `RegisterPage.tsx`, `ProfilePage.tsx`; `npm run build` thành công).*
+4. Tiếp tục phát triển các phân hệ Backend tiếp theo (`sessions`, `bookings`, `disputes`, `wallets`, `admin`), cài đặt thư viện bản đồ/QR (`react-leaflet`, `html5-qrcode`, `qrcode.react`) và xây dựng `CustomMapView` Adapter ở Frontend.

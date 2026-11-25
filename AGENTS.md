@@ -87,6 +87,11 @@ badminton-matchmaking/
 2. **Bám sát đặc tả đã chốt:** Tuyệt đối không tự ý đổi tên bảng, tên cột, giá trị Enum trong `memory-bank/data-model.md` hoặc đường dẫn URL, cấu trúc JSON trong `memory-bank/api-contracts.md`.
 3. **Cổng kiểm chứng biên dịch bắt buộc:** Sau khi viết hoặc sửa mã nguồn ở `backend/` hoặc `frontend/`, Agent bắt buộc phải chạy lệnh `npm run build` tại thư mục tương ứng và sửa toàn bộ lỗi kiểu dữ liệu TypeScript trước khi báo cáo hoàn thành hoặc cập nhật tiến độ.
 4. **Cập nhật bộ nhớ sau mỗi bước:** Sau khi `npm run build` chạy thành công không có lỗi, cập nhật trạng thái vào `memory-bank/activeContext.md` và đánh dấu hoàn thành vào `memory-bank/progress.md`.
+5. **Bắt buộc xuất hướng dẫn chạy thử và kiểm thử sau khi hoàn thành:** Tại cuối mỗi phản hồi sau khi biên dịch thành công, Agent bắt buộc phải cung cấp mục **Hướng dẫn Kiểm thử Thủ công** gồm:
+   - Các lệnh Terminal chính xác để khởi động cơ sở dữ liệu Docker, máy chủ Backend và giao diện Frontend.
+   - Địa chỉ URL cụ thể trên trình duyệt hoặc trang tài liệu Swagger UI cần truy cập.
+   - Thông tin tài khoản mẫu lấy từ tệp `backend/prisma/seed.ts` để đăng nhập thử nghiệm.
+   - Danh sách từng bước thao tác kiểm thử cho cả trường hợp hợp lệ lẫn trường hợp báo lỗi nghiệp vụ của tính năng vừa xây dựng.
 
 ## 6. Quy tắc Quản lý Mã nguồn Git (Git Guardrails)
 

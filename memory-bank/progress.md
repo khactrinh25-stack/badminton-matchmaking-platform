@@ -14,7 +14,7 @@
 - [x] Khởi tạo dự án Backend NestJS + Cấu hình Prisma ORM kết nối PostgreSQL.
 - [x] Đưa `schema.prisma` từ `memory-bank/data-model.md` vào `backend/prisma/schema.prisma` và chạy Migration đầu tiên.
 - [x] Viết dữ liệu mẫu (`backend/prisma/seed.ts`) gồm tài khoản Admin, Host, Guest và các sân cầu lông mẫu tại TP.HCM.
-- [ ] Khởi tạo dự án Frontend React 18 + Vite + TypeScript + Tailwind CSS + TanStack Query + Zustand.
+- [x] Khởi tạo dự án Frontend React 18 + Vite + TypeScript + Tailwind CSS + TanStack Query + Zustand.
 
 ## Giai đoạn 3: Nền tảng Tài khoản & Nghiệp vụ 1 — Tạo sân, Tìm sân GPS (Milestone 2)
 - [x] Backend: API Đăng ký (SĐT Unique + bcrypt), Đăng nhập JWT, Guards phân quyền `USER`/`ADMIN`, Cập nhật hồ sơ & trình độ (`FR-01` -> `FR-03`).
