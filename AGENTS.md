@@ -79,3 +79,10 @@ badminton-matchmaking/
 - **Frontend (`cd frontend`):**
   - Chạy môi trường dev: `npm run dev`
   - Kiểm tra lỗi TypeScript & Build: `npm run build`
+
+## 5. Quy trình Thực thi & Kiểm chứng Mã nguồn (Execution & Verification Protocol)
+
+1. **Giới hạn phạm vi mỗi lượt sinh mã:** Chỉ thực hiện 1 phân hệ Backend hoặc 1 đến 2 trang giao diện Frontend trong mỗi lần yêu cầu, giới hạn tối đa 3 đến 6 tệp tạo mới hoặc chỉnh sửa để kiểm soát lỗi.
+2. **Bám sát đặc tả đã chốt:** Tuyệt đối không tự ý đổi tên bảng, tên cột, giá trị Enum trong `memory-bank/data-model.md` hoặc đường dẫn URL, cấu trúc JSON trong `memory-bank/api-contracts.md`.
+3. **Cổng kiểm chứng biên dịch bắt buộc:** Sau khi viết hoặc sửa mã nguồn ở `backend/` hoặc `frontend/`, Agent bắt buộc phải chạy lệnh `npm run build` tại thư mục tương ứng và sửa toàn bộ lỗi kiểu dữ liệu TypeScript trước khi báo cáo hoàn thành hoặc cập nhật tiến độ.
+4. **Cập nhật bộ nhớ sau mỗi bước:** Sau khi `npm run build` chạy thành công không có lỗi, cập nhật trạng thái vào `memory-bank/activeContext.md` và đánh dấu hoàn thành vào `memory-bank/progress.md`.
