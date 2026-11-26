@@ -19,6 +19,15 @@ import { WebhooksService } from './webhooks.service';
 export class WebhooksController {
   constructor(private readonly webhooksService: WebhooksService) {}
 
+  @Post('payment')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Nhận webhook xác nhận thanh toán từ cổng thật (chưa bật ở chế độ demo)',
+  })
+  handleGatewayWebhook() {
+    return this.webhooksService.handleGatewayWebhook();
+  }
+
   /**
    * Endpoint giả lập thanh toán cho môi trường Dev/Demo
    * Chỉ hoạt động khi ENABLE_MOCK_PAYMENT=true

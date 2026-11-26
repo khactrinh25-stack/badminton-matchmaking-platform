@@ -24,7 +24,7 @@
 
 ## Giai đoạn 4: Hoàn thiện Nghiệp vụ 1 — Đặt giữ chỗ Escrow & Chính sách Hủy (Milestone 3)
 - [x] Backend: Logic đặt vị trí bọc trong `prisma.$transaction` chống Race Condition + Cronjob hủy đơn `PENDING_PAYMENT` quá 10 phút (`FR-09`, `NFR-01`).
-- [ ] Backend + Frontend: Tích hợp tạo mã QR thanh toán PayOS/VNPay Sandbox + Endpoint nhận Webhook (`FR-10`, `NFR-02`) + Nút giả lập thanh toán cho môi trường Dev.
+- [x] Backend + Frontend: Tích hợp tạo mã QR thanh toán PayOS/VNPay Sandbox + Endpoint nhận Webhook (`FR-10`, `NFR-02`) + Nút giả lập thanh toán cho môi trường Dev.
 - [ ] Backend + Frontend: Chức năng Guest hủy đặt chỗ tự động tính tiền hoàn (100% / 50% / 0%) theo 30 phút ân hạn (Cooling-off) và gói hủy của buổi đánh (`FR-11`).
 - [ ] Backend + Frontend: Chức năng Host hủy buổi đánh trước 2 tiếng khi chưa đủ người tối thiểu (`FR-07`) và Quản lý số dư / Yêu cầu rút tiền (`FR-12`).
 

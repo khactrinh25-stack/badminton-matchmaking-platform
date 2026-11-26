@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import {
   BookingStatus,
-  Prisma,
   SessionStatus,
   TransactionType,
 } from '@prisma/client';
@@ -192,8 +191,6 @@ export class BookingsService {
           },
         });
 
-        // TODO: Tích hợp PayOS/VNPay SDK để lấy checkout_url & qr_code_url thực tế
-        // Hiện tại trả về placeholder cho giai đoạn Milestone 3 tiếp theo
         return {
           booking: {
             id: booking.id,
@@ -205,10 +202,10 @@ export class BookingsService {
             expires_at: booking.expires_at,
           },
           payment: {
-            qr_code_url: null,
+            qr_code_url: booking.id,
             checkout_url: null,
             message:
-              'Tích hợp cổng thanh toán PayOS/VNPay sẽ được triển khai ở bước tiếp theo. Sử dụng endpoint giả lập POST /api/webhooks/mock-pay/:bookingId để xác nhận thanh toán.',
+              'Chế độ demo: dùng mã QR này hoặc bấm "Giả lập thanh toán" trong danh sách đơn để xác nhận.',
           },
         };
       }

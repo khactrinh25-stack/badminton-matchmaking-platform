@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
@@ -9,18 +10,24 @@ import {
   ShieldCheck,
   Users,
 } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CustomMapView } from '../../components/map/CustomMapView';
 import { getSkillLevelLabel } from '../../constants/skillLevels';
 import { extractApiErrorMessage } from '../../services/api';
+import { bookingService } from '../../services/bookingService';
 import { sessionService } from '../../services/sessionService';
 import { useAuthStore } from '../../stores/authStore';
 import { CANCEL_POLICY_META } from '../../types/session';
 
 export function SessionDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const currentUser = useAuthStore((s) => s.user);
+  const [slots, setSlots] = useState(1);
+  const [paymentMethod, setPaymentMethod] = useState<'GATEWAY' | 'WALLET'>(
+    'GATEWAY',
+  );
 
   const { data: session, isLoading, isError, error } = useQuery({
     queryKey: ['sessions', 'detail', id],
@@ -34,6 +41,21 @@ export function SessionDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions', 'detail', id] });
       queryClient.invalidateQueries({ queryKey: ['sessions', 'search'] });
+    },
+  });
+
+  const bookingMutation = useMutation({
+    mutationFn: () =>
+      bookingService.createBooking({
+        session_id: id!,
+        slots_count: slots,
+        payment_method: paymentMethod,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions', 'detail', id] });
+      queryClient.invalidateQueries({ queryKey: ['sessions', 'search'] });
+      queryClient.invalidateQueries({ queryKey: ['bookings', 'my-bookings'] });
+      navigate('/bookings');
     },
   });
 
@@ -251,6 +273,84 @@ export function SessionDetailPage() {
                 Chỉ hủy được trước giờ bắt đầu ít nhất 2 tiếng khi số chỗ đã đặt nhỏ hơn{' '}
                 {session.min_players} người.
               </p>
+            </div>
+          )}
+
+          {!isHost && session.status === 'OPEN' && (
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+              <h2 className="text-base font-semibold text-slate-900">Đặt chỗ tham gia</h2>
+
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">Số vị trí</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSlots((value) => Math.max(1, value - 1))}
+                    disabled={slots <= 1}
+                    className="h-8 w-8 rounded-lg border border-slate-200 text-lg leading-none text-slate-700 disabled:opacity-40"
+                  >
+                    -
+                  </button>
+                  <span className="w-6 text-center font-semibold">{slots}</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSlots((value) => Math.min(remainingSlots, value + 1))
+                    }
+                    disabled={slots >= remainingSlots}
+                    className="h-8 w-8 rounded-lg border border-slate-200 text-lg leading-none text-slate-700 disabled:opacity-40"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 p-2.5">
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    checked={paymentMethod === 'GATEWAY'}
+                    onChange={() => setPaymentMethod('GATEWAY')}
+                    className="accent-emerald-600"
+                  />
+                  <span>Thanh toán demo bằng mã QR</span>
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 p-2.5">
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    checked={paymentMethod === 'WALLET'}
+                    onChange={() => setPaymentMethod('WALLET')}
+                    className="accent-emerald-600"
+                  />
+                  <span>Trừ từ số dư khả dụng</span>
+                </label>
+              </div>
+
+              {bookingMutation.isError && (
+                <div className="flex items-start gap-2 rounded-lg bg-rose-50 p-2.5 text-xs text-rose-700">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{extractApiErrorMessage(bookingMutation.error)}</span>
+                </div>
+              )}
+
+              <button
+                type="button"
+                disabled={bookingMutation.isPending || remainingSlots <= 0}
+                onClick={() => bookingMutation.mutate()}
+                className="w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {bookingMutation.isPending
+                  ? 'Đang giữ chỗ...'
+                  : `Đặt ${slots} chỗ`}
+              </button>
+              <Link
+                to="/bookings"
+                className="block text-center text-xs font-medium text-emerald-700 hover:underline"
+              >
+                Xem đơn đặt chỗ của tôi
+              </Link>
             </div>
           )}
         </div>

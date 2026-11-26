@@ -1,7 +1,9 @@
 import {
+  ConflictException,
   Injectable,
   Logger,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import {
   BookingStatus,
@@ -36,12 +38,28 @@ export class WebhooksService {
         });
       }
 
+      const now = new Date();
+
+      if (booking.status === BookingStatus.EXPIRED) {
+        throw new ConflictException({
+          errorCode: 'BOOKING_EXPIRED',
+          message: 'Đơn đặt chỗ đã hết hạn thanh toán.',
+        });
+      }
+
       // Idempotency: Nếu đã xử lý rồi thì trả OK ngay
       if (booking.status !== BookingStatus.PENDING_PAYMENT) {
         this.logger.warn(
           `Webhook idempotent: Booking ${bookingId} đã ở trạng thái ${booking.status}`,
         );
         return { success: true, booking_status: booking.status };
+      }
+
+      if (booking.expires_at && booking.expires_at <= now) {
+        throw new ConflictException({
+          errorCode: 'BOOKING_EXPIRED',
+          message: 'Đơn đặt chỗ đã hết hạn thanh toán.',
+        });
       }
 
       // Kiểm tra external_ref_id đã xử lý chưa
@@ -56,7 +74,6 @@ export class WebhooksService {
       }
 
       // Cập nhật booking sang CONFIRMED
-      const now = new Date();
       await tx.booking.update({
         where: { id: bookingId },
         data: {
@@ -85,6 +102,14 @@ export class WebhooksService {
       );
 
       return { success: true, booking_status: BookingStatus.CONFIRMED };
+    });
+  }
+
+  handleGatewayWebhook(): never {
+    throw new ServiceUnavailableException({
+      errorCode: 'PAYMENT_GATEWAY_NOT_CONFIGURED',
+      message:
+        'Cổng thanh toán thật chưa được cấu hình. Vui lòng dùng chế độ giả lập thanh toán.',
     });
   }
 }
