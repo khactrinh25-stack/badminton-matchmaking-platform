@@ -1,8 +1,9 @@
 # ACTIVE CONTEXT — Trạng thái Làm việc Hiện tại
 
 **Cập nhật lần cuối:** 2026-11-26  
-**Giai đoạn hiện tại:** Đang triển khai **Milestone 3 — Đặt giữ chỗ Escrow & Chính sách Hủy** trên nhánh `feat/bookings-escrow`:
-- Backend: Xây dựng `BookingsModule` (`POST /api/bookings` với `prisma.$transaction` chống Race Condition, `GET /api/bookings/my-bookings` kèm `qr_payload`), `WebhooksModule` (`POST /api/webhooks/mock-pay/:bookingId` giả lập thanh toán Idempotent cho Dev/Demo), `JobsModule` (`@Cron(EVERY_MINUTE)` hủy đơn `PENDING_PAYMENT` quá 10 phút + `POST /api/admin/jobs/trigger-expire-bookings` cho Admin kích hoạt thủ công), cài đặt `@nestjs/schedule`, đăng ký `ScheduleModule.forRoot()` trong `AppModule`, `npm run build` Backend thành công.
+**Giai đoạn hiện tại:** Hoàn thành bước đầu tiên của **Milestone 3** — luồng thanh toán demo (`FR-10`, `NFR-02`) trên nhánh `feat/payment-qr-webhook` (chưa commit):
+- Backend: `POST /api/bookings` trả QR payload là `booking.id` ở chế độ demo; `confirmPayment()` chặn đơn đã hết hạn và giữ nguyên idempotency; `POST /api/webhooks/payment` được dựng nhưng trả `503 PAYMENT_GATEWAY_NOT_CONFIGURED` vì chưa có khóa thật; `npm run build` backend thành công.
+- Frontend: Trang `/bookings` hiển thị QR demo, đếm ngược giữ chỗ 10 phút, nút giả lập thanh toán và polling TanStack Query; trang chi tiết sân có panel đặt chỗ `GATEWAY`/`WALLET`; cài `qrcode.react`; `npm run build` frontend thành công.
 
 ## 1. Những Nội dung Đã Chốt & Hoàn thành
 - **Phân tích & Thiết kế Hệ thống Thông tin (Giai đoạn 1):**
@@ -20,22 +21,21 @@
 3. **Bằng chứng tranh chấp hai chiều:** Bảng `Dispute` lưu đồng thời bằng chứng của người khiếu nại (`reporter_*`) và bằng chứng phản hồi đối chứng từ bên còn lại (`respondent_*`) kèm khoảng cách Haversine thực tế tới sân (`<= 200m`).
 4. **Thời gian giữ chỗ chờ thanh toán & Phạm vi khóa Escrow:** Đơn `PENDING_PAYMENT` giữ chỗ tối đa 10 phút trước khi Cronjob chuyển sang `EXPIRED`; khi có tranh chấp, hệ thống chỉ khóa giải ngân trên đơn `Booking` bị `DISPUTED`, không khóa cả `Session`.
 5. **Webhook Idempotency (NFR-02):** `WebhooksService.confirmPayment()` kiểm tra `booking.status !== PENDING_PAYMENT` hoặc `external_ref_id` đã tồn tại trước khi xử lý, đảm bảo không cộng tiền lần hai.
+6. **Thanh toán Demo:** Không có khóa PayOS thật; `qr_code_url` là `booking.id`, `checkout_url = null`, luồng webhook thật trả `PAYMENT_GATEWAY_NOT_CONFIGURED`. Chỉ bổ sung xác thực chữ ký khi có khóa.
 
 ## 3. Files Đã Tạo / Chỉnh sửa Trong Phiên Này
-- `backend/src/modules/bookings/dto/create-booking.dto.ts` (mới)
-- `backend/src/modules/bookings/bookings.service.ts` (mới)
-- `backend/src/modules/bookings/bookings.controller.ts` (mới)
-- `backend/src/modules/bookings/bookings.module.ts` (mới)
-- `backend/src/modules/webhooks/webhooks.service.ts` (mới)
-- `backend/src/modules/webhooks/webhooks.controller.ts` (mới)
-- `backend/src/modules/webhooks/webhooks.module.ts` (mới)
-- `backend/src/modules/jobs/jobs.service.ts` (mới)
-- `backend/src/modules/jobs/jobs.controller.ts` (mới)
-- `backend/src/modules/jobs/jobs.module.ts` (mới)
-- `backend/src/app.module.ts` (sửa: thêm `ScheduleModule`, `BookingsModule`, `WebhooksModule`, `JobsModule`)
+- `backend/src/modules/bookings/bookings.service.ts` (sửa: trả QR demo cho `GATEWAY`, bỏ import thừa)
+- `backend/src/modules/webhooks/webhooks.service.ts` (sửa: chặn đơn hết hạn, thêm `handleGatewayWebhook`)
+- `backend/src/modules/webhooks/webhooks.controller.ts` (sửa: thêm `POST /api/webhooks/payment`)
+- `backend/.env.example` (mới: chỉ placeholder, bật mock payment)
+- `frontend/package.json`, `frontend/package-lock.json` (thêm `qrcode.react`)
+- `frontend/src/services/bookingService.ts` (mới)
+- `frontend/src/pages/bookings/MyBookingsPage.tsx` (mới)
+- `frontend/src/pages/sessions/SessionDetailPage.tsx` (sửa: panel đặt chỗ)
+- `frontend/src/App.tsx` (sửa: route `/bookings`)
 
 ## 4. Trọng tâm Công việc Tiếp theo (Next Steps — Milestone 3)
 1. ~~Backend: Logic đặt vị trí bọc trong `prisma.$transaction` chống Race Condition + Cronjob hủy đơn `PENDING_PAYMENT` quá 10 phút~~ *(Đã hoàn thành)*.
-2. Backend + Frontend: Tích hợp tạo mã QR thanh toán PayOS/VNPay Sandbox + Endpoint nhận Webhook (`FR-10`, `NFR-02`) + Nút giả lập thanh toán cho môi trường Dev.
+2. ~~Backend + Frontend: Tích hợp tạo mã QR thanh toán PayOS/VNPay Sandbox + Endpoint nhận Webhook (`FR-10`, `NFR-02`) + Nút giả lập thanh toán cho môi trường Dev~~ *(Đã hoàn thành ở chế độ fallback mock; webhook thật trả 503 khi chưa có khóa)*.
 3. Backend + Frontend: Chức năng Guest hủy đặt chỗ tự động tính tiền hoàn (100% / 50% / 0%) theo 30 phút ân hạn và gói hủy (`FR-11`).
 4. Backend + Frontend: Chức năng Host hủy buổi đánh trước 2 tiếng & Quản lý số dư / Yêu cầu rút tiền (`FR-07`, `FR-12`).

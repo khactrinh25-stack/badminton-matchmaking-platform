@@ -4,6 +4,7 @@ import { ProtectedRoute, PublicOnlyRoute } from './components/auth/ProtectedRout
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
+import { MyBookingsPage } from './pages/bookings/MyBookingsPage';
 import { ProfilePage } from './pages/profile/ProfilePage';
 import { CreateSessionPage } from './pages/sessions/CreateSessionPage';
 import { SearchSessionsPage } from './pages/sessions/SearchSessionsPage';
@@ -34,6 +35,7 @@ export function App() {
 
             <Route element={<ProtectedRoute />}>
               <Route path="/sessions/create" element={<CreateSessionPage />} />
+              <Route path="/bookings" element={<MyBookingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>
