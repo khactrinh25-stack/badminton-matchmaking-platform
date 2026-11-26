@@ -1,7 +1,9 @@
 # ACTIVE CONTEXT — Trạng thái Làm việc Hiện tại
 
-**Cập nhật lần cuối:** 2026-11-25  
-**Giai đoạn hiện tại:** Đã hoàn tất **Bước 3: Nền tảng Frontend Auth & Profile** trên nhánh `feat/frontend-auth` — Cài đặt `react-router-dom`, `@tanstack/react-query`, `zustand`, `axios`, `lucide-react`, cấu hình Tailwind CSS, xây dựng Axios interceptor (`VITE_API_URL` + JWT + xử lý `401`), `useAuthStore`, `ProtectedRoute`, 3 trang (`LoginPage`, `RegisterPage`, `ProfilePage`) và `npm run build` Frontend thành công.
+**Cập nhật lần cuối:** 2026-11-26  
+**Giai đoạn hiện tại:** Đã hoàn tất **Milestone 2 — Phân hệ Sessions & Giao diện Tìm sân / Tạo kèo / Chi tiết sân (`FR-04` -> `FR-08`)** trên nhánh `feat/custom-map-view`:
+- Backend: Xây dựng `SessionsModule` (`POST /api/sessions`, `GET /api/sessions/search` với Haversine + Bounding Box, `GET /api/sessions/my-hosted`, `GET /api/sessions/:id` kèm `OptionalJwtAuthGuard` & che SĐT `RULE-07`, `POST /api/sessions/:id/cancel` hoàn tiền 100% trong `prisma.$transaction`), `npm run build` Backend thành công.
+- Frontend: Xây dựng `AppLayout` (thanh điều hướng Tìm sân, Tạo kèo, Hồ sơ, Đăng xuất), `SearchSessionsPage`, `CreateSessionPage` (khóa động gói hủy `RULE-05` + chọn ghim `CustomMapView`), `SessionDetailPage`, chuyển hướng sau đăng nhập về `/sessions`, `npm run build` Frontend thành công.
 
 ## 1. Những Nội dung Đã Chốt & Hoàn thành
 - **Phân tích & Thiết kế Hệ thống Thông tin (Giai đoạn 1):**

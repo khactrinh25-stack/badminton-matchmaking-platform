@@ -1,9 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute, PublicOnlyRoute } from './components/auth/ProtectedRoute';
+import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { ProfilePage } from './pages/profile/ProfilePage';
+import { CreateSessionPage } from './pages/sessions/CreateSessionPage';
+import { SearchSessionsPage } from './pages/sessions/SearchSessionsPage';
+import { SessionDetailPage } from './pages/sessions/SessionDetailPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,12 +28,18 @@ export function App() {
             <Route path="/register" element={<RegisterPage />} />
           </Route>
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/profile" element={<ProfilePage />} />
+          <Route element={<AppLayout />}>
+            <Route path="/sessions" element={<SearchSessionsPage />} />
+            <Route path="/sessions/:id" element={<SessionDetailPage />} />
+
+            <Route element={<ProtectedRoute />}>
+              <Route path="/sessions/create" element={<CreateSessionPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Route>
           </Route>
 
-          <Route path="/" element={<Navigate to="/profile" replace />} />
-          <Route path="*" element={<Navigate to="/profile" replace />} />
+          <Route path="/" element={<Navigate to="/sessions" replace />} />
+          <Route path="*" element={<Navigate to="/sessions" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

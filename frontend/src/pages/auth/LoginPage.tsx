@@ -22,7 +22,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const redirectTo = (location.state as LocationState | null)?.from?.pathname || '/profile';
+  const redirectTo = (location.state as LocationState | null)?.from?.pathname || '/sessions';
 
   const loginMutation = useMutation({
     mutationFn: authService.login,

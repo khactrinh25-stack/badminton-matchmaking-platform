@@ -21,7 +21,7 @@ export function PublicOnlyRoute({ children }: ProtectedRouteProps) {
   const accessToken = useAuthStore((state) => state.accessToken);
 
   if (accessToken) {
-    return <Navigate to="/profile" replace />;
+    return <Navigate to="/sessions" replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;
