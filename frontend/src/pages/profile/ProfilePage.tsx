@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   CreditCard,
   Loader2,
-  LogOut,
   Phone,
   Save,
   ShieldAlert,
@@ -16,7 +15,6 @@ import {
   User,
   Wallet,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { getSkillLevelLabel, SKILL_LEVEL_OPTIONS } from '../../constants/skillLevels';
 import { extractApiErrorMessage } from '../../services/api';
 import { userService } from '../../services/authService';
@@ -44,9 +42,8 @@ function formatDateTime(isoDate: string | null): string {
 }
 
 export function ProfilePage() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user: storedUser, setUser, logout } = useAuthStore();
+  const { user: storedUser, setUser } = useAuthStore();
 
   const {
     data: profile,
@@ -73,12 +70,6 @@ export function ProfilePage() {
       setSuccessMessage('Cập nhật hồ sơ thành công!');
     },
   });
-
-  const handleLogout = () => {
-    logout();
-    queryClient.clear();
-    navigate('/login', { replace: true });
-  };
 
   const handleProfileSubmit = (payload: UpdateProfilePayload) => {
     setSuccessMessage(null);
@@ -112,31 +103,9 @@ export function ProfilePage() {
   const isLocked = currentUser?.is_locked ?? false;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-10">
-      {/* Top App Bar */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
-              CL
-            </div>
-            <span className="font-semibold text-slate-900 text-sm sm:text-base">
-              Hồ sơ cá nhân
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Đăng xuất</span>
-          </button>
-        </div>
-      </header>
-
-      <main className="max-w-2xl mx-auto px-4 pt-5 space-y-4">
+    <div className="pb-10">
+      <div className="max-w-2xl mx-auto space-y-4">
+        <h1 className="text-2xl font-bold text-slate-900">Hồ sơ cá nhân</h1>
         {isError && (
           <div
             role="alert"
@@ -305,7 +274,7 @@ export function ProfilePage() {
             onSubmit={handleProfileSubmit}
           />
         </section>
-      </main>
+      </div>
     </div>
   );
 }

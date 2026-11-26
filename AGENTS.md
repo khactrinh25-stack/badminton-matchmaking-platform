@@ -68,6 +68,8 @@ badminton-matchmaking/
    - Lưu trữ ảnh: Đẩy ảnh qua `multer` lên **Cloudinary**, chỉ lưu chuỗi URL vào PostgreSQL.
 5. **Không cho phép Host tự nhập số giờ hủy tùy ý:** Host chỉ được chọn 1 trong 3 gói `Enum` cố định (`FLEXIBLE_6H`, `MODERATE_12H`, `STRICT_24H`).
 6. **Che thông tin Số điện thoại:** Backend chỉ trả về SĐT thật của Host và Guest khi đơn đặt chỗ đã `CONFIRMED` hoặc `CHECKED_IN` và thời gian hiện tại nằm trong khung `[start_time - 30 phút, end_time]`.
+7. **Không hiển thị mã tài liệu nội bộ lên giao diện người dùng (UI):** Tuyệt đối không đưa các mã kỹ thuật hoặc nghiệp vụ nội bộ (`RULE-xx`, `FR-xx`, `NFR-xx`, `SOP`) vào văn bản hiển thị cho người dùng cuối trên Frontend.
+8. **Thông báo trước các biến môi trường / API Key cần thiết:** Trước khi triển khai tính năng có tích hợp bên thứ 3 (như Goong Maps, Cloudinary, PayOS/VNPay), thông báo rõ cho người dùng các API Key cần cung cấp; nếu chưa có, nêu rõ phương án tạm thời (fallback/mock) sẽ sử dụng.
 
 ## 4. Các Lệnh Làm việc Thường dùng (Common Commands)
 

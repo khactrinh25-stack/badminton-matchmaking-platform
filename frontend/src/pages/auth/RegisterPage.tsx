@@ -32,7 +32,7 @@ export function RegisterPage() {
     mutationFn: authService.register,
     onSuccess: (data) => {
       setAuth(data.access_token, data.user);
-      navigate('/profile', { replace: true });
+      navigate('/sessions', { replace: true });
     },
   });
 
