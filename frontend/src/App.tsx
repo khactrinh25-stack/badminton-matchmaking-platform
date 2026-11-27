@@ -7,6 +7,7 @@ import { RegisterPage } from './pages/auth/RegisterPage';
 import { MyBookingsPage } from './pages/bookings/MyBookingsPage';
 import { ProfilePage } from './pages/profile/ProfilePage';
 import { CreateSessionPage } from './pages/sessions/CreateSessionPage';
+import { HostManageSessionPage } from './pages/sessions/HostManageSessionPage';
 import { SearchSessionsPage } from './pages/sessions/SearchSessionsPage';
 import { SessionDetailPage } from './pages/sessions/SessionDetailPage';
 
@@ -34,6 +35,7 @@ export function App() {
             <Route path="/sessions/:id" element={<SessionDetailPage />} />
 
             <Route element={<ProtectedRoute />}>
+              <Route path="/sessions/host" element={<HostManageSessionPage />} />
               <Route path="/sessions/create" element={<CreateSessionPage />} />
               <Route path="/bookings" element={<MyBookingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />

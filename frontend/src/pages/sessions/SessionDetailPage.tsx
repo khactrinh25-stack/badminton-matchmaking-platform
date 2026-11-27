@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
@@ -18,6 +18,7 @@ import { bookingService } from '../../services/bookingService';
 import { sessionService } from '../../services/sessionService';
 import { useAuthStore } from '../../stores/authStore';
 import { CANCEL_POLICY_META } from '../../types/session';
+import { getCancelBlockReason } from '../../utils/cancelSessionEligibility';
 
 export function SessionDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +29,12 @@ export function SessionDetailPage() {
   const [paymentMethod, setPaymentMethod] = useState<'GATEWAY' | 'WALLET'>(
     'GATEWAY',
   );
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const { data: session, isLoading, isError, error } = useQuery({
     queryKey: ['sessions', 'detail', id],
@@ -41,6 +48,8 @@ export function SessionDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions', 'detail', id] });
       queryClient.invalidateQueries({ queryKey: ['sessions', 'search'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions', 'my-hosted'] });
+      queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
     },
   });
 
@@ -81,6 +90,7 @@ export function SessionDetailPage() {
   const start = new Date(session.start_time);
   const end = new Date(session.end_time);
   const isHost = currentUser?.id === session.host.id;
+  const cancelBlockReason = isHost ? getCancelBlockReason(session, now) : null;
   const remainingSlots = session.max_players - session.booked_slots;
   const policyMeta = CANCEL_POLICY_META[session.cancel_policy];
 
@@ -248,31 +258,51 @@ export function SessionDetailPage() {
           {isHost && session.status === 'OPEN' && (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
               <h2 className="text-base font-semibold text-slate-900">Quản lý buổi đánh (Host)</h2>
-              {cancelMutation.isError && (
-                <div className="flex items-start gap-2 rounded-lg bg-rose-50 p-2.5 text-xs text-rose-700">
+              {cancelBlockReason ? (
+                <div
+                  role="status"
+                  className="flex items-start gap-2 rounded-lg bg-amber-50 p-2.5 text-xs text-amber-800"
+                >
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{extractApiErrorMessage(cancelMutation.error)}</span>
+                  <span>{cancelBlockReason}</span>
                 </div>
+              ) : (
+                <>
+                  {cancelMutation.isError && (
+                    <div className="flex items-start gap-2 rounded-lg bg-rose-50 p-2.5 text-xs text-rose-700">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>
+                        {extractApiErrorMessage(
+                          cancelMutation.error,
+                          'Không thể hủy buổi đánh. Vui lòng thử lại.',
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  {cancelMutation.isSuccess && cancelMutation.data && (
+                    <div className="rounded-lg bg-emerald-50 p-2.5 text-xs text-emerald-700">
+                      {cancelMutation.data.message}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    disabled={cancelMutation.isPending}
+                    onClick={() => cancelMutation.mutate()}
+                    className="w-full rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-60"
+                  >
+                    {cancelMutation.isPending ? 'Đang hủy buổi đánh...' : 'Hủy buổi đánh'}
+                  </button>
+                  <p className="text-[11px] text-slate-500">
+                    Còn khoảng{' '}
+                    {Math.max(
+                      0,
+                      Math.floor((start.getTime() - now) / 60_000),
+                    )}{' '}
+                    phút trước giờ bắt đầu; đã đặt {session.booked_slots}/
+                    {session.min_players} người — đủ điều kiện hủy.
+                  </p>
+                </>
               )}
-              {cancelMutation.isSuccess && (
-                <div className="rounded-lg bg-emerald-50 p-2.5 text-xs text-emerald-700">
-                  {cancelMutation.data.message}
-                </div>
-              )}
-              <button
-                type="button"
-                disabled={cancelMutation.isPending}
-                onClick={() => cancelMutation.mutate()}
-                className="w-full rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-60"
-              >
-                {cancelMutation.isPending
-                  ? 'Đang hủy buổi đánh...'
-                  : 'Hủy buổi đánh (thiếu người tối thiểu)'}
-              </button>
-              <p className="text-[11px] text-slate-500">
-                Chỉ hủy được trước giờ bắt đầu ít nhất 2 tiếng khi số chỗ đã đặt nhỏ hơn{' '}
-                {session.min_players} người.
-              </p>
             </div>
           )}
 

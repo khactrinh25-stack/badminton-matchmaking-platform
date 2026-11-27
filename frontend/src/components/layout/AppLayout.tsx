@@ -1,4 +1,4 @@
-import { LogOut, MapPin, PlusCircle, User } from 'lucide-react';
+import { Calendar, LogOut, MapPin, PlusCircle, User } from 'lucide-react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -39,6 +39,11 @@ export function AppLayout() {
             <NavLink to="/sessions/create" className={navLinkClass}>
               <PlusCircle className="h-4 w-4" />
               <span>Tạo kèo</span>
+            </NavLink>
+            <NavLink to="/sessions/host" className={navLinkClass}>
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Buổi của tôi</span>
+              <span className="sm:hidden">Quản lý</span>
             </NavLink>
             <NavLink to="/profile" className={navLinkClass}>
               <User className="h-4 w-4" />
