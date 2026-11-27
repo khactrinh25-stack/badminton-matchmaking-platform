@@ -26,7 +26,7 @@
 - [x] Backend: Logic đặt vị trí bọc trong `prisma.$transaction` chống Race Condition + Cronjob hủy đơn `PENDING_PAYMENT` quá 10 phút (`FR-09`, `NFR-01`).
 - [x] Backend + Frontend: Tích hợp tạo mã QR thanh toán PayOS/VNPay Sandbox + Endpoint nhận Webhook (`FR-10`, `NFR-02`) + Nút giả lập thanh toán cho môi trường Dev.
 - [x] Backend + Frontend: Chức năng Guest hủy đặt chỗ tự động tính tiền hoàn (100% / 50% / 0%) theo 30 phút ân hạn (Cooling-off) và gói hủy của buổi đánh (`FR-11`).
-- [ ] Backend + Frontend: Chức năng Host hủy buổi đánh trước 2 tiếng khi chưa đủ người tối thiểu (`FR-07`) và Quản lý số dư / Yêu cầu rút tiền (`FR-12`).
+- [x] Backend + Frontend: Chức năng Host hủy buổi đánh trước 2 tiếng khi chưa đủ người tối thiểu (`FR-07`) và Quản lý số dư / Yêu cầu rút tiền (`FR-12`). *(Hoàn thành Lượt 1 + Lượt 2 trên nhánh `feat/host-cancel-wallet-withdrawal`; đã kiểm thử thực tế đạt 100%, chờ commit.)*
 
 ## Giai đoạn 5: Nghiệp vụ 2 — Điểm danh QR, Báo cáo Hiện trường & Phân xử SOP (Milestone 4)
 - [ ] Backend + Frontend: Logic ẩn/hiện SĐT liên lạc (`<a href="tel:...">`) đúng 30 phút trước giờ bắt đầu (`FR-08`, `NFR-05`).

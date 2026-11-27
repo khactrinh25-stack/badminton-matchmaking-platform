@@ -6,6 +6,7 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { MyBookingsPage } from './pages/bookings/MyBookingsPage';
 import { ProfilePage } from './pages/profile/ProfilePage';
+import { WalletPage } from './pages/wallet/WalletPage';
 import { CreateSessionPage } from './pages/sessions/CreateSessionPage';
 import { HostManageSessionPage } from './pages/sessions/HostManageSessionPage';
 import { SearchSessionsPage } from './pages/sessions/SearchSessionsPage';
@@ -39,6 +40,7 @@ export function App() {
               <Route path="/sessions/create" element={<CreateSessionPage />} />
               <Route path="/bookings" element={<MyBookingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/wallet" element={<WalletPage />} />
             </Route>
           </Route>
 
