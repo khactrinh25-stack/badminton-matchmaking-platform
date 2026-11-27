@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -395,11 +396,6 @@ export class SessionsService {
     return this.prisma.$transaction(async (tx) => {
       const session = await tx.session.findUnique({
         where: { id: sessionId },
-        include: {
-          bookings: {
-            where: { status: BookingStatus.CONFIRMED },
-          },
-        },
       });
 
       if (!session) {
@@ -439,48 +435,104 @@ export class SessionsService {
         });
       }
 
-      await tx.session.update({
-        where: { id: sessionId },
+      const claimedSession = await tx.session.updateMany({
+        where: { id: sessionId, status: SessionStatus.OPEN },
         data: { status: SessionStatus.CANCELLED },
       });
 
-      for (const booking of session.bookings) {
-        const guest = await tx.user.findUnique({
-          where: { id: booking.guest_id },
-          select: { available_balance: true },
+      if (claimedSession.count !== 1) {
+        throw new ConflictException({
+          errorCode: 'SESSION_ALREADY_CANCELLED',
+          message: 'Buổi đánh này đã được hủy hoặc đang được xử lý.',
         });
-        const balanceBefore = guest?.available_balance ?? new Prisma.Decimal(0);
-        const balanceAfter = balanceBefore.add(booking.total_amount);
+      }
 
-        await tx.booking.update({
-          where: { id: booking.id },
+      const bookings = await tx.booking.findMany({
+        where: {
+          session_id: sessionId,
+          status: {
+            in: [BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT],
+          },
+        },
+        select: {
+          id: true,
+          guest_id: true,
+          slots_count: true,
+          total_amount: true,
+          status: true,
+        },
+      });
+
+      const orderedBookings = [...bookings].sort(
+        (a, b) =>
+          a.guest_id.localeCompare(b.guest_id) || a.id.localeCompare(b.id),
+      );
+
+      let refundedBookings = 0;
+
+      for (const booking of orderedBookings) {
+        if (booking.status === BookingStatus.CONFIRMED) {
+          const claimedBooking = await tx.booking.updateMany({
+            where: { id: booking.id, status: BookingStatus.CONFIRMED },
+            data: {
+              status: BookingStatus.CANCELLED_BY_HOST,
+              cancelled_at: now,
+            },
+          });
+
+          if (claimedBooking.count !== 1) {
+            continue;
+          }
+
+          const updatedWallet = await tx.user.update({
+            where: { id: booking.guest_id },
+            data: {
+              available_balance: { increment: booking.total_amount },
+            },
+            select: { available_balance: true },
+          });
+          const balanceAfter = updatedWallet.available_balance;
+          const balanceBefore = balanceAfter.sub(booking.total_amount);
+
+          await tx.walletTransaction.create({
+            data: {
+              user_id: booking.guest_id,
+              booking_id: booking.id,
+              type: TransactionType.BOOKING_REFUND,
+              amount: booking.total_amount,
+              balance_before: balanceBefore,
+              balance_after: balanceAfter,
+              description: `Hoàn tiền 100% do Host hủy buổi đánh "${session.title}"`,
+            },
+          });
+
+          refundedBookings++;
+          continue;
+        }
+
+        const expiredBooking = await tx.booking.updateMany({
+          where: { id: booking.id, status: BookingStatus.PENDING_PAYMENT },
           data: {
-            status: BookingStatus.CANCELLED_BY_HOST,
+            status: BookingStatus.EXPIRED,
             cancelled_at: now,
           },
         });
 
-        await tx.user.update({
-          where: { id: booking.guest_id },
-          data: { available_balance: balanceAfter },
-        });
+        if (expiredBooking.count !== 1) {
+          continue;
+        }
 
-        await tx.walletTransaction.create({
+        await tx.session.update({
+          where: { id: sessionId },
           data: {
-            user_id: booking.guest_id,
-            booking_id: booking.id,
-            type: TransactionType.BOOKING_REFUND,
-            amount: booking.total_amount,
-            balance_before: balanceBefore,
-            balance_after: balanceAfter,
-            description: `Hoàn tiền 100% do Host hủy buổi đánh "${session.title}"`,
+            booked_slots: { decrement: booking.slots_count },
           },
         });
       }
 
       return {
         message: 'Đã hủy buổi đánh và hoàn tiền 100% cho người chơi.',
-        refunded_bookings: session.bookings.length,
+        refunded_bookings: refundedBookings,
       };
     });
   }

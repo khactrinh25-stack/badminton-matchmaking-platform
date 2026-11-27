@@ -7,6 +7,7 @@ import { BookingsModule } from './modules/bookings/bookings.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { UsersModule } from './modules/users/users.module';
+import { WalletsModule } from './modules/wallets/wallets.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -18,6 +19,7 @@ import { PrismaModule } from './prisma/prisma.module';
     UsersModule,
     SessionsModule,
     BookingsModule,
+    WalletsModule,
     WebhooksModule,
     JobsModule,
   ],

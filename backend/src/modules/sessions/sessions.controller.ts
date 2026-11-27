@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Query,
   UseGuards,
@@ -73,7 +74,7 @@ export class SessionsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Host hủy buổi đánh do thiếu người (FR-07)' })
   cancelSession(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser('id') userId: string,
   ) {
     return this.sessionsService.cancelSessionByHost(id, userId);
