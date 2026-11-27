@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import {
   BookingStatus,
+  CancelPolicy,
   SessionStatus,
   TransactionType,
 } from '@prisma/client';
@@ -15,6 +16,16 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 
 const PENDING_PAYMENT_TTL_MINUTES = 10;
+const COOLING_OFF_MINUTES = 30;
+const COOLING_OFF_MIN_START_HOURS = 2;
+const CANCEL_THRESHOLDS_HOURS: Record<
+  CancelPolicy,
+  { fullRefund: number; halfRefund: number }
+> = {
+  [CancelPolicy.FLEXIBLE_6H]: { fullRefund: 6, halfRefund: 2 },
+  [CancelPolicy.MODERATE_12H]: { fullRefund: 12, halfRefund: 4 },
+  [CancelPolicy.STRICT_24H]: { fullRefund: 24, halfRefund: 12 },
+};
 
 @Injectable()
 export class BookingsService {
@@ -284,6 +295,151 @@ export class BookingsService {
             skill_level: b.session.host.skill_level,
           },
         },
+      };
+    });
+  }
+
+  async cancelBooking(guestId: string, bookingId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.findUnique({
+        where: { id: bookingId },
+        include: {
+          session: true,
+        },
+      });
+
+      if (!booking) {
+        throw new NotFoundException({
+          errorCode: 'BOOKING_NOT_FOUND',
+          message: 'Không tìm thấy đơn đặt chỗ.',
+        });
+      }
+
+      if (booking.guest_id !== guestId) {
+        throw new ForbiddenException({
+          errorCode: 'BOOKING_NOT_OWNER',
+          message: 'Bạn chỉ có thể hủy đơn đặt chỗ của mình.',
+        });
+      }
+
+      if (booking.status !== BookingStatus.CONFIRMED) {
+        throw new ConflictException({
+          errorCode: 'BOOKING_NOT_CANCELLABLE',
+          message: 'Chỉ có thể hủy đơn đã xác nhận thanh toán.',
+        });
+      }
+
+      const now = new Date();
+      if (now >= booking.session.start_time) {
+        throw new ConflictException({
+          errorCode: 'SESSION_ALREADY_STARTED',
+          message: 'Buổi đánh đã bắt đầu, không thể hủy đặt chỗ.',
+        });
+      }
+
+      const hoursUntilStart =
+        (booking.session.start_time.getTime() - now.getTime()) /
+        (60 * 60 * 1000);
+      const paidAt = booking.paid_at;
+      const isWithinCoolingOff =
+        paidAt !== null &&
+        now.getTime() - paidAt.getTime() <= COOLING_OFF_MINUTES * 60 * 1000 &&
+        hoursUntilStart >= COOLING_OFF_MIN_START_HOURS;
+
+      const thresholds = CANCEL_THRESHOLDS_HOURS[booking.session.cancel_policy];
+      let refundPercentage = 0;
+
+      if (isWithinCoolingOff || hoursUntilStart >= thresholds.fullRefund) {
+        refundPercentage = 100;
+      } else if (hoursUntilStart >= thresholds.halfRefund) {
+        refundPercentage = 50;
+      }
+
+      const refundAmount = booking.total_amount
+        .mul(refundPercentage)
+        .div(100)
+        .floor();
+      const hostAmount = booking.total_amount.sub(refundAmount);
+
+      const claimed = await tx.booking.updateMany({
+        where: { id: bookingId, status: BookingStatus.CONFIRMED },
+        data: {
+          status: BookingStatus.CANCELLED_BY_GUEST,
+          cancelled_at: now,
+        },
+      });
+
+      if (claimed.count !== 1) {
+        throw new ConflictException({
+          errorCode: 'BOOKING_ALREADY_CANCELLED',
+          message: 'Đơn đặt chỗ này đã được hủy.',
+        });
+      }
+
+      const updatedSession = await tx.session.update({
+        where: { id: booking.session_id },
+        data: { booked_slots: { decrement: booking.slots_count } },
+      });
+
+      if (
+        updatedSession.status === SessionStatus.FULL &&
+        updatedSession.booked_slots < updatedSession.max_players &&
+        updatedSession.start_time > now
+      ) {
+        await tx.session.update({
+          where: { id: booking.session_id },
+          data: { status: SessionStatus.OPEN },
+        });
+      }
+
+      if (refundAmount.greaterThan(0)) {
+        const guestWallet = await tx.user.update({
+          where: { id: guestId },
+          data: { available_balance: { increment: refundAmount } },
+          select: { available_balance: true },
+        });
+        const balanceAfter = guestWallet.available_balance;
+        const balanceBefore = balanceAfter.sub(refundAmount);
+
+        await tx.walletTransaction.create({
+          data: {
+            user_id: guestId,
+            booking_id: booking.id,
+            type: TransactionType.BOOKING_REFUND,
+            amount: refundAmount,
+            balance_before: balanceBefore,
+            balance_after: balanceAfter,
+            description: `Hoàn tiền hủy đặt chỗ buổi đánh "${booking.session.title}"`,
+          },
+        });
+      }
+
+      if (hostAmount.greaterThan(0)) {
+        const hostWallet = await tx.user.update({
+          where: { id: booking.session.host_id },
+          data: { available_balance: { increment: hostAmount } },
+          select: { available_balance: true },
+        });
+        const balanceAfter = hostWallet.available_balance;
+        const balanceBefore = balanceAfter.sub(hostAmount);
+
+        await tx.walletTransaction.create({
+          data: {
+            user_id: booking.session.host_id,
+            booking_id: booking.id,
+            type: TransactionType.SESSION_PAYOUT,
+            amount: hostAmount,
+            balance_before: balanceBefore,
+            balance_after: balanceAfter,
+            description: `Giải ngân từ đơn đã hủy buổi đánh "${booking.session.title}"`,
+          },
+        });
+      }
+
+      return {
+        message: 'Hủy đặt chỗ thành công.',
+        refund_percentage: refundPercentage,
+        refunded_amount: refundAmount.toFixed(2),
       };
     });
   }

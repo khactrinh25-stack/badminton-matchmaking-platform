@@ -2,10 +2,12 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseUUIDPipe,
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -31,6 +33,21 @@ export class BookingsController {
     @Body() dto: CreateBookingDto,
   ) {
     return this.bookingsService.createBooking(userId, dto);
+  }
+
+  @Post(':id/cancel')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER)
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', description: 'ID của đơn đặt chỗ cần hủy' })
+  @ApiOperation({
+    summary: 'Guest hủy đặt chỗ và tự động hoàn tiền (FR-11)',
+  })
+  cancelBooking(
+    @CurrentUser('id') userId: string,
+    @Param('id', ParseUUIDPipe) bookingId: string,
+  ) {
+    return this.bookingsService.cancelBooking(userId, bookingId);
   }
 
   @Get('my-bookings')

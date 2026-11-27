@@ -1,9 +1,18 @@
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, ArrowLeft, Clock, MapPin, QrCode } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  MapPin,
+  QrCode,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { extractApiErrorMessage } from '../../services/api';
 import { bookingService, type BookingStatus, type MyBooking } from '../../services/bookingService';
+import { CANCEL_POLICY_META } from '../../types/session';
 
 const STATUS_LABEL: Record<BookingStatus, string> = {
   PENDING_PAYMENT: 'Chờ thanh toán',
@@ -24,14 +33,26 @@ const HIDDEN_QR_STATUSES: BookingStatus[] = [
 
 export function MyBookingsPage() {
   const queryClient = useQueryClient();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const { data: bookings, isLoading, isError, error } = useQuery({
     queryKey: ['bookings', 'my-bookings'],
     queryFn: bookingService.getMyBookings,
-    refetchInterval: (query) =>
-      query.state.data?.some((booking) => booking.status === 'PENDING_PAYMENT')
-        ? 10000
-        : false,
+    refetchInterval: (query) => {
+      const items = query.state.data;
+      if (items?.some((booking) => booking.status === 'PENDING_PAYMENT')) {
+        return 10000;
+      }
+      if (items?.some((booking) => booking.status === 'CONFIRMED')) {
+        return 60000;
+      }
+      return false;
+    },
   });
 
   const mockPayMutation = useMutation({
@@ -39,6 +60,15 @@ export function MyBookingsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings', 'my-bookings'] });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: (bookingId: string) => bookingService.cancelBooking(bookingId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings', 'my-bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
     },
   });
 
@@ -59,6 +89,30 @@ export function MyBookingsPage() {
         <div className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{extractApiErrorMessage(mockPayMutation.error)}</span>
+        </div>
+      )}
+
+      {cancelMutation.isSuccess && cancelMutation.data && (
+        <div className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>
+            {cancelMutation.data.message} Hoàn{' '}
+            {cancelMutation.data.refund_percentage}% (
+            {Number(cancelMutation.data.refunded_amount).toLocaleString('vi-VN')}
+            đ).
+          </span>
+        </div>
+      )}
+
+      {cancelMutation.isError && (
+        <div className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>
+            {extractApiErrorMessage(
+              cancelMutation.error,
+              'Không thể hủy đặt chỗ. Vui lòng thử lại.',
+            )}
+          </span>
         </div>
       )}
 
@@ -89,6 +143,13 @@ export function MyBookingsPage() {
       <div className="space-y-4">
         {bookings?.map((booking: MyBooking) => {
           const isPending = booking.status === 'PENDING_PAYMENT';
+          const isCancelled =
+            booking.status === 'EXPIRED' ||
+            booking.status === 'CANCELLED_BY_GUEST' ||
+            booking.status === 'CANCELLED_BY_HOST';
+          const canCancel =
+            booking.status === 'CONFIRMED' &&
+            new Date(booking.session.start_time).getTime() > now;
           const showQr = !HIDDEN_QR_STATUSES.includes(booking.status);
 
           return (
@@ -110,7 +171,9 @@ export function MyBookingsPage() {
                   className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                     isPending
                       ? 'bg-amber-100 text-amber-800'
-                      : 'bg-emerald-100 text-emerald-800'
+                      : isCancelled
+                        ? 'bg-slate-100 text-slate-700'
+                        : 'bg-emerald-100 text-emerald-800'
                   }`}
                 >
                   {STATUS_LABEL[booking.status]}
@@ -188,6 +251,43 @@ export function MyBookingsPage() {
                   )}
                 </div>
               </div>
+
+              {canCancel && (
+                <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+                  <p>
+                    Chính sách hủy:{' '}
+                    {
+                      CANCEL_POLICY_META[booking.session.cancel_policy]
+                        .description
+                    }
+                    . Tỷ lệ hoàn tiền được tính tự động khi bạn xác nhận.
+                  </p>
+                  <button
+                    type="button"
+                    disabled={
+                      cancelMutation.isPending &&
+                      cancelMutation.variables === booking.id
+                    }
+                    onClick={() => {
+                      const policy =
+                        CANCEL_POLICY_META[booking.session.cancel_policy];
+                      if (
+                        window.confirm(
+                          `Hủy đơn này? ${policy.description}. Tỷ lệ hoàn tiền sẽ được tính tự động.`,
+                        )
+                      ) {
+                        cancelMutation.mutate(booking.id);
+                      }
+                    }}
+                    className="mt-2 w-full rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-60 sm:w-auto"
+                  >
+                    {cancelMutation.isPending &&
+                    cancelMutation.variables === booking.id
+                      ? 'Đang hủy...'
+                      : 'Hủy đặt chỗ'}
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
