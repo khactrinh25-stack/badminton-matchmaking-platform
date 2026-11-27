@@ -38,6 +38,12 @@ export interface CreateBookingResponse {
   payment: PaymentInfo | null;
 }
 
+export interface CancelBookingResponse {
+  message: string;
+  refund_percentage: 100 | 50 | 0;
+  refunded_amount: string;
+}
+
 export interface MyBooking {
   id: string;
   session_id: string;
@@ -79,6 +85,13 @@ export const bookingService = {
 
   async getMyBookings(): Promise<MyBooking[]> {
     const response = await apiClient.get<MyBooking[]>('/bookings/my-bookings');
+    return response.data;
+  },
+
+  async cancelBooking(bookingId: string): Promise<CancelBookingResponse> {
+    const response = await apiClient.post<CancelBookingResponse>(
+      `/bookings/${bookingId}/cancel`,
+    );
     return response.data;
   },
 
